@@ -45,14 +45,14 @@ export const TemplateFilters: React.FC<TemplateFiltersProps> = ({
         </div>
         
         <Select
-          value={filters.category}
-          onValueChange={(value) => updateFilters({ category: value })}
+          value={filters.category || 'all-categories'}
+          onValueChange={(value) => updateFilters({ category: value === 'all-categories' ? '' : value })}
         >
           <SelectTrigger className="w-full sm:w-48">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Categories</SelectItem>
+            <SelectItem value="all-categories">All Categories</SelectItem>
             {templateCategories.map((category) => (
               <SelectItem key={category} value={category}>
                 {category}
