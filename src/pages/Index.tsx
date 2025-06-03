@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Navigation } from '@/components/Navigation';
 import { TemplateCard } from '@/components/TemplateCard';
@@ -62,6 +61,17 @@ const Index = () => {
   const handleTemplateSelect = (template: Template) => {
     setSelectedTemplate(template);
     setCurrentView('generator');
+  };
+
+  const handleNavigate = (view: 'home' | 'projects' | 'templates') => {
+    setCurrentView(view);
+  };
+
+  const getCurrentViewForNav = (): 'home' | 'projects' | 'templates' => {
+    if (currentView === 'generator' || currentView === 'viewer') {
+      return 'home';
+    }
+    return currentView;
   };
 
   const handleSaveProject = (projectName: string, keys: Record<string, string>) => {
@@ -336,7 +346,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Navigation currentView={currentView === 'generator' || currentView === 'viewer' ? 'home' : currentView} onNavigate={setCurrentView} />
+      <Navigation 
+        currentView={getCurrentViewForNav()} 
+        onNavigate={handleNavigate} 
+      />
       
       <main className="container mx-auto px-4 py-8">
         {currentView === 'home' && renderHome()}

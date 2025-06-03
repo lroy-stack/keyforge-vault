@@ -11,25 +11,40 @@ export const predefinedTemplates: Template[] = [
       {
         id: 'supabase_url',
         name: 'SUPABASE_URL',
-        label: 'Supabase URL',
-        type: 'text',
-        description: 'Your Supabase project URL'
+        label: 'Project URL',
+        type: 'external',
+        description: 'Your Supabase project URL from the dashboard',
+        isExternal: true,
+        externalUrl: 'https://app.supabase.com/projects',
+        externalUrlLabel: 'Get from Supabase Dashboard'
       },
       {
         id: 'supabase_anon_key',
         name: 'SUPABASE_ANON_KEY',
         label: 'Anonymous Key',
-        type: 'hex',
-        length: 64,
-        description: 'Public anonymous key for client-side operations'
+        type: 'external',
+        description: 'Public anonymous key for client-side operations',
+        isExternal: true,
+        externalUrl: 'https://app.supabase.com/projects',
+        externalUrlLabel: 'Get from Supabase Dashboard'
       },
       {
         id: 'supabase_service_role',
         name: 'SUPABASE_SERVICE_ROLE_KEY',
         label: 'Service Role Key',
+        type: 'external',
+        description: 'Private service role key for server operations',
+        isExternal: true,
+        externalUrl: 'https://app.supabase.com/projects',
+        externalUrlLabel: 'Get from Supabase Dashboard'
+      },
+      {
+        id: 'jwt_secret',
+        name: 'JWT_SECRET',
+        label: 'JWT Secret',
         type: 'hex',
         length: 64,
-        description: 'Private service role key for server operations'
+        description: 'Secret key for signing JWT tokens'
       },
       {
         id: 'postgres_password',
@@ -38,6 +53,21 @@ export const predefinedTemplates: Template[] = [
         type: 'password',
         length: 24,
         description: 'PostgreSQL database password'
+      },
+      {
+        id: 'dashboard_username',
+        name: 'DASHBOARD_USERNAME',
+        label: 'Dashboard Username',
+        type: 'text',
+        description: 'Dashboard access username'
+      },
+      {
+        id: 'dashboard_password',
+        name: 'DASHBOARD_PASSWORD',
+        label: 'Dashboard Password',
+        type: 'password',
+        length: 20,
+        description: 'Dashboard access password'
       }
     ]
   },
@@ -135,9 +165,11 @@ export const predefinedTemplates: Template[] = [
         id: 'api_key',
         name: 'N8N_API_KEY',
         label: 'API Key',
-        type: 'hex',
-        length: 48,
-        description: 'n8n API access key'
+        type: 'external',
+        description: 'n8n API access key from your instance settings',
+        isExternal: true,
+        externalUrl: 'https://docs.n8n.io/api/authentication/',
+        externalUrlLabel: 'See n8n API Documentation'
       }
     ]
   },
@@ -170,12 +202,14 @@ export const predefinedTemplates: Template[] = [
         description: 'SMTP authentication password'
       },
       {
-        id: 'api_key',
-        name: 'EMAIL_API_KEY',
-        label: 'Email Service API Key',
-        type: 'hex',
-        length: 40,
-        description: 'API key for email service provider'
+        id: 'sendgrid_api_key',
+        name: 'SENDGRID_API_KEY',
+        label: 'SendGrid API Key',
+        type: 'external',
+        description: 'SendGrid API key from your account dashboard',
+        isExternal: true,
+        externalUrl: 'https://app.sendgrid.com/settings/api_keys',
+        externalUrlLabel: 'Get from SendGrid Dashboard'
       }
     ]
   }

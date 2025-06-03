@@ -3,10 +3,13 @@ export interface KeyField {
   id: string;
   name: string;
   label: string;
-  type: 'password' | 'hex' | 'jwt' | 'uuid' | 'text';
+  type: 'password' | 'hex' | 'jwt' | 'uuid' | 'text' | 'external';
   length?: number;
   description?: string;
   value?: string;
+  isExternal?: boolean;
+  externalUrl?: string;
+  externalUrlLabel?: string;
 }
 
 export interface Template {

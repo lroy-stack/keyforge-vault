@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Key, Home, Folder, Settings, Plus } from 'lucide-react';
 
 interface NavigationProps {
-  currentView: 'home' | 'projects' | 'templates' | 'settings';
-  onNavigate: (view: 'home' | 'projects' | 'templates' | 'settings') => void;
+  currentView: 'home' | 'projects' | 'templates';
+  onNavigate: (view: 'home' | 'projects' | 'templates') => void;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({ currentView, onNavigate }) => {
@@ -34,7 +34,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onNavigate 
                   key={item.id}
                   variant={currentView === item.id ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={() => onNavigate(item.id as any)}
+                  onClick={() => onNavigate(item.id as 'home' | 'projects' | 'templates')}
                   className="flex items-center space-x-2"
                 >
                   <Icon className="w-4 h-4" />

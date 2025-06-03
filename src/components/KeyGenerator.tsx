@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Key, RefreshCw, Eye, EyeOff, Save } from 'lucide-react';
+import { Copy, Key, RefreshCw, Eye, EyeOff, Save, ExternalLink, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Template, KeyField } from '@/types';
 import { CryptoUtils } from '@/utils/crypto';
 import { useToast } from '@/hooks/use-toast';
@@ -54,7 +55,7 @@ export const KeyGenerator: React.FC<KeyGeneratorProps> = ({ template, onSave, on
   const generateAllKeys = () => {
     const newKeys: Record<string, string> = {};
     template.fields.forEach(field => {
-      if (field.type !== 'text') {
+      if (!field.isExternal && field.type !== 'text') {
         let generatedValue = '';
         switch (field.type) {
           case 'password':
@@ -76,8 +77,8 @@ export const KeyGenerator: React.FC<KeyGeneratorProps> = ({ template, onSave, on
     setKeys(prev => ({ ...prev, ...newKeys }));
     
     toast({
-      title: "All Keys Generated",
-      description: "All keys have been generated successfully.",
+      title: "Local Keys Generated",
+      description: "All locally generatable keys have been created.",
     });
   };
 
@@ -113,7 +114,7 @@ export const KeyGenerator: React.FC<KeyGeneratorProps> = ({ template, onSave, on
 
     const keysToSave = { ...keys };
     template.fields.forEach(field => {
-      if (field.type === 'text' && !keysToSave[field.id]) {
+      if ((field.type === 'text' || field.isExternal) && !keysToSave[field.id]) {
         keysToSave[field.id] = '';
       }
     });
@@ -135,104 +136,149 @@ export const KeyGenerator: React.FC<KeyGeneratorProps> = ({ template, onSave, on
     URL.revokeObjectURL(url);
   };
 
+  const openExternalUrl = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const getFieldTypeColor = (field: KeyField) => {
+    if (field.isExternal) return 'bg-orange-100 text-orange-800';
+    return 'bg-blue-100 text-blue-800';
+  };
+
+  const getFieldTypeLabel = (field: KeyField) => {
+    if (field.isExternal) return 'EXTERNAL';
+    return field.type.toUpperCase();
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Generate Keys</h2>
-          <p className="text-muted-foreground">Template: {template.name}</p>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={generateAllKeys} variant="outline">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Generate All
-          </Button>
-          <Button onClick={onBack} variant="outline">
-            Back
-          </Button>
-        </div>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Save className="w-5 h-5" />
-            Project Settings
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="project-name">Project Name</Label>
-              <Input
-                id="project-name"
-                placeholder="Enter project name..."
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={handleSave} disabled={!projectName.trim()}>
-                <Save className="w-4 h-4 mr-2" />
-                Save Project
-              </Button>
-              <Button onClick={exportKeys} variant="outline" disabled={Object.keys(keys).length === 0}>
-                Export .env
-              </Button>
-            </div>
+    <TooltipProvider>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">Generate Keys</h2>
+            <p className="text-muted-foreground">Template: {template.name}</p>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex gap-2">
+            <Button onClick={generateAllKeys} variant="outline">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Generate All Local
+            </Button>
+            <Button onClick={onBack} variant="outline">
+              Back
+            </Button>
+          </div>
+        </div>
 
-      <div className="space-y-4">
-        {template.fields.map((field) => (
-          <Card key={field.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg">{field.label}</CardTitle>
-                  <CardDescription>{field.description}</CardDescription>
-                </div>
-                <Badge variant="secondary">{field.type.toUpperCase()}</Badge>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Save className="w-5 h-5" />
+              Project Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="project-name">Project Name</Label>
+                <Input
+                  id="project-name"
+                  placeholder="Enter project name..."
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
+                />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <Label>{field.name}</Label>
-                <div className="flex gap-2">
-                  {field.type === 'text' ? (
-                    <Input
-                      value={keys[field.id] || ''}
-                      onChange={(e) => setKeys(prev => ({ ...prev, [field.id]: e.target.value }))}
-                      placeholder={`Enter ${field.label.toLowerCase()}...`}
-                      className="flex-1"
-                    />
-                  ) : (
-                    <div className="relative flex-1">
-                      <Textarea
-                        value={keys[field.id] || ''}
-                        onChange={(e) => setKeys(prev => ({ ...prev, [field.id]: e.target.value }))}
-                        placeholder="Click 'Generate' to create a secure key"
-                        className="min-h-[80px] font-mono text-sm resize-none"
-                        type={visibleKeys[field.id] ? 'text' : 'password'}
-                        style={{
-                          WebkitTextSecurity: visibleKeys[field.id] ? 'none' : 'disc'
-                        }}
-                      />
+              <div className="flex gap-2">
+                <Button onClick={handleSave} disabled={!projectName.trim()}>
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Project
+                </Button>
+                <Button onClick={exportKeys} variant="outline" disabled={Object.keys(keys).length === 0}>
+                  Export .env
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          {template.fields.map((field) => (
+            <Card key={field.id}>
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-2">
+                    <div>
+                      <CardTitle className="text-lg">{field.label}</CardTitle>
+                      <CardDescription>{field.description}</CardDescription>
+                    </div>
+                    {field.isExternal && (
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="w-4 h-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>This key must be obtained from an external service</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
+                  <Badge className={getFieldTypeColor(field)}>
+                    {getFieldTypeLabel(field)}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <Label>{field.name}</Label>
+                  
+                  {field.isExternal && (
+                    <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
+                      <p className="text-sm text-orange-800 mb-2">
+                        This key must be obtained from the official service.
+                      </p>
+                      <Button 
+                        onClick={() => openExternalUrl(field.externalUrl!)}
+                        size="sm"
+                        variant="outline"
+                        className="border-orange-300 text-orange-700 hover:bg-orange-100"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        {field.externalUrlLabel}
+                      </Button>
                     </div>
                   )}
-                  <div className="flex flex-col gap-1">
-                    {field.type !== 'text' && (
-                      <Button
-                        onClick={() => generateKey(field)}
-                        size="sm"
-                        className="px-3"
-                      >
-                        <Key className="w-4 h-4" />
-                      </Button>
+
+                  <div className="flex gap-2">
+                    {field.type === 'text' || field.isExternal ? (
+                      <Input
+                        value={keys[field.id] || ''}
+                        onChange={(e) => setKeys(prev => ({ ...prev, [field.id]: e.target.value }))}
+                        placeholder={field.isExternal ? 'Paste the key from external service...' : `Enter ${field.label.toLowerCase()}...`}
+                        className="flex-1"
+                      />
+                    ) : (
+                      <div className="relative flex-1">
+                        <Textarea
+                          value={keys[field.id] || ''}
+                          onChange={(e) => setKeys(prev => ({ ...prev, [field.id]: e.target.value }))}
+                          placeholder="Click 'Generate' to create a secure key"
+                          className="min-h-[80px] font-mono text-sm resize-none"
+                          style={{
+                            WebkitTextSecurity: visibleKeys[field.id] ? 'none' : 'disc'
+                          } as React.CSSProperties}
+                        />
+                      </div>
                     )}
-                    {keys[field.id] && (
-                      <>
+                    <div className="flex flex-col gap-1">
+                      {!field.isExternal && field.type !== 'text' && (
+                        <Button
+                          onClick={() => generateKey(field)}
+                          size="sm"
+                          className="px-3"
+                        >
+                          <Key className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {keys[field.id] && !field.isExternal && field.type !== 'text' && (
                         <Button
                           onClick={() => toggleVisibility(field.id)}
                           size="sm"
@@ -241,6 +287,8 @@ export const KeyGenerator: React.FC<KeyGeneratorProps> = ({ template, onSave, on
                         >
                           {visibleKeys[field.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </Button>
+                      )}
+                      {keys[field.id] && (
                         <Button
                           onClick={() => copyToClipboard(keys[field.id], field.label)}
                           size="sm"
@@ -249,15 +297,15 @@ export const KeyGenerator: React.FC<KeyGeneratorProps> = ({ template, onSave, on
                         >
                           <Copy className="w-4 h-4" />
                         </Button>
-                      </>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };

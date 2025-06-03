@@ -105,7 +105,7 @@ export const ProjectViewer: React.FC<ProjectViewerProps> = ({
                       className="min-h-[60px] font-mono text-sm resize-none"
                       style={{
                         WebkitTextSecurity: visibleKeys[keyName] ? 'none' : 'disc'
-                      }}
+                      } as React.CSSProperties}
                     />
                   </div>
                   <div className="flex flex-col gap-1">
