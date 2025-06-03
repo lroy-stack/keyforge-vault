@@ -19,6 +19,8 @@ export interface Template {
   category: string;
   fields: KeyField[];
   isCustom?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Project {
@@ -37,4 +39,10 @@ export interface GeneratedKeySet {
   templateName: string;
   keys: Record<string, string>;
   generatedAt: Date;
+}
+
+export interface TemplateFilters {
+  searchTerm: string;
+  category: string;
+  type: 'all' | 'predefined' | 'custom';
 }

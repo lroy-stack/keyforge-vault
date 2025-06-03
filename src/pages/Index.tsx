@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Navigation } from '@/components/Navigation';
 import { TemplateCard } from '@/components/TemplateCard';
+import { TemplateFilters } from '@/components/TemplateFilters';
+import { TemplateEditor } from '@/components/TemplateEditor';
 import { KeyGenerator } from '@/components/KeyGenerator';
 import { ProjectList } from '@/components/ProjectList';
 import { ProjectViewer } from '@/components/ProjectViewer';
@@ -10,14 +12,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Plus, Shield, Zap, Lock, Download } from 'lucide-react';
 import { predefinedTemplates } from '@/data/templates';
-import { Template, Project, GeneratedKeySet } from '@/types';
+import { Template, Project, GeneratedKeySet, TemplateFilters as TTemplateFilters } from '@/types';
 import { CryptoUtils } from '@/utils/crypto';
+import { TemplateService } from '@/services/templateService';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const { toast } = useToast();
-  const [currentView, setCurrentView] = useState<'home' | 'projects' | 'templates' | 'generator' | 'viewer'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'projects' | 'templates' | 'generator' | 'viewer' | 'editor'>('home');
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
+  const [customTemplates, setCustomTemplates] = useState<Template[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [currentKeySet, setCurrentKeySet] = useState<GeneratedKeySet | null>(null);
@@ -33,8 +38,15 @@ const Index = () => {
     keys: Record<string, string>;
   } | null>(null);
 
+  const [filters, setFilters] = useState<TTemplateFilters>({
+    searchTerm: '',
+    category: '',
+    type: 'all'
+  });
+
   useEffect(() => {
     loadProjects();
+    loadCustomTemplates();
   }, []);
 
   const loadProjects = () => {
@@ -53,10 +65,34 @@ const Index = () => {
     }
   };
 
+  const loadCustomTemplates = () => {
+    setCustomTemplates(TemplateService.getCustomTemplates());
+  };
+
   const saveProjects = (updatedProjects: Project[]) => {
     localStorage.setItem('privateKeyProjects', JSON.stringify(updatedProjects));
     setProjects(updatedProjects);
   };
+
+  const allTemplates = useMemo(() => {
+    return [...predefinedTemplates, ...customTemplates];
+  }, [customTemplates]);
+
+  const filteredTemplates = useMemo(() => {
+    return allTemplates.filter(template => {
+      const matchesSearch = !filters.searchTerm || 
+        template.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        template.description.toLowerCase().includes(filters.searchTerm.toLowerCase());
+      
+      const matchesCategory = !filters.category || template.category === filters.category;
+      
+      const matchesType = filters.type === 'all' || 
+        (filters.type === 'custom' && template.isCustom) ||
+        (filters.type === 'predefined' && !template.isCustom);
+
+      return matchesSearch && matchesCategory && matchesType;
+    });
+  }, [allTemplates, filters]);
 
   const handleTemplateSelect = (template: Template) => {
     setSelectedTemplate(template);
@@ -68,10 +104,63 @@ const Index = () => {
   };
 
   const getCurrentViewForNav = (): 'home' | 'projects' | 'templates' => {
-    if (currentView === 'generator' || currentView === 'viewer') {
+    if (currentView === 'generator' || currentView === 'viewer' || currentView === 'editor') {
       return 'home';
     }
     return currentView;
+  };
+
+  const handleCreateTemplate = () => {
+    setEditingTemplate(null);
+    setCurrentView('editor');
+  };
+
+  const handleEditTemplate = (template: Template) => {
+    setEditingTemplate(template);
+    setCurrentView('editor');
+  };
+
+  const handleCloneTemplate = (template: Template) => {
+    const cloned = TemplateService.cloneTemplate(template);
+    setEditingTemplate(cloned);
+    setCurrentView('editor');
+  };
+
+  const handleDeleteTemplate = (template: Template) => {
+    if (template.isCustom) {
+      try {
+        TemplateService.deleteCustomTemplate(template.id);
+        loadCustomTemplates();
+        toast({
+          title: "Template Deleted",
+          description: `${template.name} has been deleted successfully.`,
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete template.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleSaveTemplate = (template: Template) => {
+    try {
+      TemplateService.saveCustomTemplate(template);
+      loadCustomTemplates();
+      setCurrentView('templates');
+      toast({
+        title: "Template Saved",
+        description: `${template.name} has been saved successfully.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save template.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSaveProject = (projectName: string, keys: Record<string, string>) => {
@@ -258,11 +347,14 @@ const Index = () => {
           </Button>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {predefinedTemplates.slice(0, 3).map((template) => (
+          {allTemplates.slice(0, 6).map((template) => (
             <TemplateCard
               key={template.id}
               template={template}
               onSelect={handleTemplateSelect}
+              onEdit={handleEditTemplate}
+              onClone={handleCloneTemplate}
+              onDelete={handleDeleteTemplate}
             />
           ))}
         </div>
@@ -303,22 +395,48 @@ const Index = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Templates</h2>
-          <p className="text-muted-foreground">Choose a template to generate your keys</p>
+          <p className="text-muted-foreground">Choose a template to generate your keys or create your own</p>
         </div>
-        <Button onClick={() => setCurrentView('home')}>
-          Back to Home
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleCreateTemplate} className="bg-primary">
+            <Plus className="w-4 h-4 mr-2" />
+            New Template
+          </Button>
+          <Button onClick={() => setCurrentView('home')} variant="outline">
+            Back to Home
+          </Button>
+        </div>
       </div>
 
+      <TemplateFilters
+        filters={filters}
+        onFiltersChange={setFilters}
+        totalCount={allTemplates.length}
+        filteredCount={filteredTemplates.length}
+      />
+
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {predefinedTemplates.map((template) => (
+        {filteredTemplates.map((template) => (
           <TemplateCard
             key={template.id}
             template={template}
             onSelect={handleTemplateSelect}
+            onEdit={template.isCustom ? handleEditTemplate : undefined}
+            onClone={handleCloneTemplate}
+            onDelete={template.isCustom ? handleDeleteTemplate : undefined}
           />
         ))}
       </div>
+
+      {filteredTemplates.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">No templates found matching your criteria.</p>
+          <Button onClick={handleCreateTemplate} className="mt-4">
+            <Plus className="w-4 h-4 mr-2" />
+            Create Your First Template
+          </Button>
+        </div>
+      )}
     </div>
   );
 
@@ -355,6 +473,13 @@ const Index = () => {
         {currentView === 'home' && renderHome()}
         {currentView === 'templates' && renderTemplates()}
         {currentView === 'projects' && renderProjects()}
+        {currentView === 'editor' && (
+          <TemplateEditor
+            template={editingTemplate || undefined}
+            onSave={handleSaveTemplate}
+            onCancel={() => setCurrentView('templates')}
+          />
+        )}
         {currentView === 'generator' && selectedTemplate && (
           <KeyGenerator
             template={selectedTemplate}
