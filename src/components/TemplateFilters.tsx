@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, X } from 'lucide-react';
+import { Search, X, TestTube, Building, Globe } from 'lucide-react';
 import { TemplateFilters as TTemplateFilters } from '@/types';
 import { templateCategories } from '@/data/templates';
 
@@ -26,10 +26,10 @@ export const TemplateFilters: React.FC<TemplateFiltersProps> = ({
   };
 
   const clearFilters = () => {
-    onFiltersChange({ searchTerm: '', category: '', type: 'all' });
+    onFiltersChange({ searchTerm: '', category: '', type: 'all', environment: 'all' });
   };
 
-  const hasActiveFilters = filters.searchTerm || filters.category || filters.type !== 'all';
+  const hasActiveFilters = filters.searchTerm || filters.category || filters.type !== 'all' || filters.environment !== 'all';
 
   return (
     <div className="space-y-4">
@@ -75,6 +75,30 @@ export const TemplateFilters: React.FC<TemplateFiltersProps> = ({
           </SelectContent>
         </Select>
 
+        <Select
+          value={filters.environment}
+          onValueChange={(value) => updateFilters({ environment: value as TTemplateFilters['environment'] })}
+        >
+          <SelectTrigger className="w-full sm:w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Environments</SelectItem>
+            <SelectItem value="development">
+              <div className="flex items-center gap-2">
+                <TestTube className="w-4 h-4" />
+                Development
+              </div>
+            </SelectItem>
+            <SelectItem value="production">
+              <div className="flex items-center gap-2">
+                <Building className="w-4 h-4" />
+                Production
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+
         {hasActiveFilters && (
           <Button onClick={clearFilters} variant="outline" size="sm">
             <X className="w-4 h-4 mr-2" />
@@ -101,6 +125,12 @@ export const TemplateFilters: React.FC<TemplateFiltersProps> = ({
               {filters.type !== 'all' && (
                 <Badge variant="secondary">
                   Type: {filters.type}
+                </Badge>
+              )}
+              {filters.environment !== 'all' && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  {filters.environment === 'development' ? <TestTube className="w-3 h-3" /> : <Building className="w-3 h-3" />}
+                  {filters.environment}
                 </Badge>
               )}
             </div>

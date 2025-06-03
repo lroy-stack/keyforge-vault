@@ -1,163 +1,355 @@
-
 import { Template } from '../types';
 
 export const predefinedTemplates: Template[] = [
   {
-    id: 'supabase',
-    name: 'Supabase',
-    description: 'Complete Supabase project configuration',
-    category: 'Database',
+    id: 'stripe',
+    name: 'Stripe Payments',
+    description: 'Complete Stripe payment processing configuration for development and production',
+    category: 'Payments',
+    documentationUrl: 'https://stripe.com/docs/keys',
+    supportsTesting: true,
     fields: [
       {
-        id: 'supabase_url',
-        name: 'SUPABASE_URL',
-        label: 'Project URL',
+        id: 'stripe_test_public_key',
+        name: 'STRIPE_TEST_PUBLIC_KEY',
+        label: 'Test Publishable Key',
         type: 'external',
-        description: 'Your Supabase project URL from the dashboard',
+        environment: 'development',
+        description: 'Stripe test publishable key for development (starts with pk_test_)',
         isExternal: true,
-        externalUrl: 'https://app.supabase.com/projects',
-        externalUrlLabel: 'Get from Supabase Dashboard'
+        externalUrl: 'https://dashboard.stripe.com/test/apikeys',
+        externalUrlLabel: 'Get from Stripe Test Dashboard',
+        testValue: 'pk_test_51234567890abcdef...',
+        helpText: 'Safe to use in frontend code. Used for test payments only.',
+        isSecret: false
       },
       {
-        id: 'supabase_anon_key',
-        name: 'SUPABASE_ANON_KEY',
-        label: 'Anonymous Key',
+        id: 'stripe_test_secret_key',
+        name: 'STRIPE_TEST_SECRET_KEY',
+        label: 'Test Secret Key',
         type: 'external',
-        description: 'Public anonymous key for client-side operations',
+        environment: 'development',
+        description: 'Stripe test secret key for server-side operations (starts with sk_test_)',
         isExternal: true,
-        externalUrl: 'https://app.supabase.com/projects',
-        externalUrlLabel: 'Get from Supabase Dashboard'
+        externalUrl: 'https://dashboard.stripe.com/test/apikeys',
+        externalUrlLabel: 'Get from Stripe Test Dashboard',
+        testValue: 'sk_test_51234567890abcdef...',
+        helpText: 'CONFIDENTIAL - Never expose in frontend. For test transactions only.',
+        isSecret: true
       },
       {
-        id: 'supabase_service_role',
-        name: 'SUPABASE_SERVICE_ROLE_KEY',
-        label: 'Service Role Key',
+        id: 'stripe_live_public_key',
+        name: 'STRIPE_LIVE_PUBLIC_KEY',
+        label: 'Live Publishable Key',
         type: 'external',
-        description: 'Private service role key for server operations',
+        environment: 'production',
+        description: 'Stripe live publishable key for production (starts with pk_live_)',
         isExternal: true,
-        externalUrl: 'https://app.supabase.com/projects',
-        externalUrlLabel: 'Get from Supabase Dashboard'
+        externalUrl: 'https://dashboard.stripe.com/apikeys',
+        externalUrlLabel: 'Get from Stripe Live Dashboard',
+        helpText: 'PRODUCTION ONLY - Processes real payments. Safe for frontend.',
+        isSecret: false
       },
       {
-        id: 'jwt_secret',
-        name: 'JWT_SECRET',
-        label: 'JWT Secret',
-        type: 'hex',
-        length: 64,
-        description: 'Secret key for signing JWT tokens'
+        id: 'stripe_live_secret_key',
+        name: 'STRIPE_LIVE_SECRET_KEY',
+        label: 'Live Secret Key',
+        type: 'external',
+        environment: 'production',
+        description: 'Stripe live secret key for production server operations (starts with sk_live_)',
+        isExternal: true,
+        externalUrl: 'https://dashboard.stripe.com/apikeys',
+        externalUrlLabel: 'Get from Stripe Live Dashboard',
+        helpText: 'HIGHLY CONFIDENTIAL - Processes real money. Never expose in frontend.',
+        isSecret: true
       },
       {
-        id: 'postgres_password',
-        name: 'POSTGRES_PASSWORD',
-        label: 'Database Password',
-        type: 'password',
-        length: 24,
-        description: 'PostgreSQL database password'
+        id: 'stripe_webhook_secret',
+        name: 'STRIPE_WEBHOOK_SECRET',
+        label: 'Webhook Secret',
+        type: 'external',
+        environment: 'both',
+        description: 'Secret for verifying Stripe webhook signatures',
+        isExternal: true,
+        externalUrl: 'https://dashboard.stripe.com/webhooks',
+        externalUrlLabel: 'Get from Stripe Webhooks',
+        helpText: 'Required for webhook security. Different for test/live endpoints.',
+        isSecret: true
+      }
+    ]
+  },
+  {
+    id: 'auth0',
+    name: 'Auth0',
+    description: 'Auth0 authentication service configuration for all environments',
+    category: 'Authentication',
+    documentationUrl: 'https://auth0.com/docs/get-started',
+    supportsTesting: true,
+    fields: [
+      {
+        id: 'auth0_domain',
+        name: 'AUTH0_DOMAIN',
+        label: 'Auth0 Domain',
+        type: 'external',
+        environment: 'both',
+        description: 'Your Auth0 tenant domain (e.g., your-tenant.auth0.com)',
+        isExternal: true,
+        externalUrl: 'https://manage.auth0.com/',
+        externalUrlLabel: 'Get from Auth0 Dashboard',
+        testValue: 'dev-tenant.auth0.com',
+        helpText: 'Same domain can be used for dev/prod apps within the tenant.',
+        isSecret: false
       },
       {
-        id: 'dashboard_username',
-        name: 'DASHBOARD_USERNAME',
-        label: 'Dashboard Username',
-        type: 'text',
-        description: 'Dashboard access username'
+        id: 'auth0_client_id',
+        name: 'AUTH0_CLIENT_ID',
+        label: 'Client ID',
+        type: 'external',
+        environment: 'both',
+        description: 'Auth0 application client ID',
+        isExternal: true,
+        externalUrl: 'https://manage.auth0.com/',
+        externalUrlLabel: 'Get from Auth0 Applications',
+        testValue: 'abcdef1234567890',
+        helpText: 'Public identifier, safe to expose. Create separate apps for dev/prod.',
+        isSecret: false
       },
       {
-        id: 'dashboard_password',
-        name: 'DASHBOARD_PASSWORD',
-        label: 'Dashboard Password',
-        type: 'password',
-        length: 20,
-        description: 'Dashboard access password'
+        id: 'auth0_client_secret',
+        name: 'AUTH0_CLIENT_SECRET',
+        label: 'Client Secret',
+        type: 'external',
+        environment: 'both',
+        description: 'Auth0 application client secret',
+        isExternal: true,
+        externalUrl: 'https://manage.auth0.com/',
+        externalUrlLabel: 'Get from Auth0 Applications',
+        helpText: 'CONFIDENTIAL - For server-side auth flows only. Never expose publicly.',
+        isSecret: true
       }
     ]
   },
   {
     id: 'firebase',
     name: 'Firebase',
-    description: 'Google Firebase project configuration',
+    description: 'Google Firebase project configuration with security rules',
     category: 'Database',
+    documentationUrl: 'https://firebase.google.com/docs/web/setup',
+    supportsTesting: true,
     fields: [
       {
         id: 'firebase_api_key',
         name: 'FIREBASE_API_KEY',
-        label: 'Firebase API Key',
+        label: 'Web API Key',
         type: 'external',
-        description: 'Web API key from Firebase project settings',
+        environment: 'both',
+        description: 'Firebase Web API key for client-side SDK',
         isExternal: true,
         externalUrl: 'https://console.firebase.google.com/',
-        externalUrlLabel: 'Get from Firebase Console'
+        externalUrlLabel: 'Get from Firebase Console → Project Settings',
+        testValue: 'AIzaSyD-example-key-1234567890',
+        helpText: 'Safe for frontend. Security controlled by Firebase rules, not this key.',
+        isSecret: false
       },
       {
         id: 'firebase_auth_domain',
         name: 'FIREBASE_AUTH_DOMAIN',
         label: 'Auth Domain',
         type: 'external',
-        description: 'Authentication domain for your Firebase project',
+        environment: 'both',
+        description: 'Firebase authentication domain',
         isExternal: true,
         externalUrl: 'https://console.firebase.google.com/',
-        externalUrlLabel: 'Get from Firebase Console'
+        externalUrlLabel: 'Get from Firebase Console → Project Settings',
+        testValue: 'your-project-id.firebaseapp.com',
+        helpText: 'Public domain for Firebase Auth. Same for all environments.',
+        isSecret: false
       },
       {
         id: 'firebase_project_id',
         name: 'FIREBASE_PROJECT_ID',
         label: 'Project ID',
         type: 'external',
-        description: 'Unique identifier for your Firebase project',
+        environment: 'both',
+        description: 'Firebase project identifier',
         isExternal: true,
         externalUrl: 'https://console.firebase.google.com/',
-        externalUrlLabel: 'Get from Firebase Console'
+        externalUrlLabel: 'Get from Firebase Console → Project Settings',
+        testValue: 'your-project-id',
+        helpText: 'Public identifier. Use separate projects for dev/staging/prod.',
+        isSecret: false
       },
       {
-        id: 'firebase_messaging_sender_id',
-        name: 'FIREBASE_MESSAGING_SENDER_ID',
-        label: 'Messaging Sender ID',
+        id: 'firebase_service_account',
+        name: 'FIREBASE_SERVICE_ACCOUNT',
+        label: 'Service Account Key',
         type: 'external',
-        description: 'Sender ID for Firebase Cloud Messaging',
+        environment: 'production',
+        description: 'Firebase Admin SDK service account JSON key',
         isExternal: true,
-        externalUrl: 'https://console.firebase.google.com/',
-        externalUrlLabel: 'Get from Firebase Console'
+        externalUrl: 'https://console.firebase.google.com/project/_/settings/serviceaccounts/adminsdk',
+        externalUrlLabel: 'Generate from Firebase Console → Service Accounts',
+        helpText: 'HIGHLY CONFIDENTIAL - Admin privileges. Server-side only.',
+        isSecret: true
+      }
+    ]
+  },
+  {
+    id: 'github-oauth',
+    name: 'GitHub OAuth',
+    description: 'GitHub OAuth application configuration with proper scopes',
+    category: 'Authentication',
+    documentationUrl: 'https://docs.github.com/en/developers/apps/building-oauth-apps',
+    supportsTesting: true,
+    fields: [
+      {
+        id: 'github_client_id',
+        name: 'GITHUB_CLIENT_ID',
+        label: 'Client ID',
+        type: 'external',
+        environment: 'both',
+        description: 'OAuth app client ID from GitHub',
+        isExternal: true,
+        externalUrl: 'https://github.com/settings/developers',
+        externalUrlLabel: 'Create OAuth App in GitHub Developer Settings',
+        testValue: 'Iv1.1234567890abcdef',
+        helpText: 'Public identifier. Create separate apps for dev/prod with different callback URLs.',
+        isSecret: false
+      },
+      {
+        id: 'github_client_secret',
+        name: 'GITHUB_CLIENT_SECRET',
+        label: 'Client Secret',
+        type: 'external',
+        environment: 'both',
+        description: 'OAuth app client secret from GitHub',
+        isExternal: true,
+        externalUrl: 'https://github.com/settings/developers',
+        externalUrlLabel: 'Get from GitHub OAuth App Settings',
+        helpText: 'CONFIDENTIAL - GitHub scans for exposed secrets. Server-side only.',
+        isSecret: true
+      },
+      {
+        id: 'github_personal_token',
+        name: 'GITHUB_PERSONAL_TOKEN',
+        label: 'Personal Access Token',
+        type: 'external',
+        environment: 'both',
+        description: 'Fine-grained personal access token for API access',
+        isExternal: true,
+        externalUrl: 'https://github.com/settings/personal-access-tokens/new',
+        externalUrlLabel: 'Generate Fine-grained Token',
+        helpText: 'CONFIDENTIAL - Use minimal scopes. Expires automatically.',
+        isSecret: true
+      }
+    ]
+  },
+  {
+    id: 'supabase',
+    name: 'Supabase',
+    description: 'Complete Supabase project configuration for all environments',
+    category: 'Database',
+    documentationUrl: 'https://supabase.com/docs/guides/api/api-keys',
+    supportsTesting: true,
+    fields: [
+      {
+        id: 'supabase_url',
+        name: 'SUPABASE_URL',
+        label: 'Project URL',
+        type: 'external',
+        environment: 'both',
+        description: 'Your Supabase project URL',
+        isExternal: true,
+        externalUrl: 'https://app.supabase.com/projects',
+        externalUrlLabel: 'Get from Supabase Dashboard → Settings → API',
+        testValue: 'https://abcdefghijklmnop.supabase.co',
+        helpText: 'Public URL. Use separate projects for dev/staging/prod.',
+        isSecret: false
+      },
+      {
+        id: 'supabase_anon_key',
+        name: 'SUPABASE_ANON_KEY',
+        label: 'Anonymous Public Key',
+        type: 'external',
+        environment: 'both',
+        description: 'Public anonymous key for client-side operations',
+        isExternal: true,
+        externalUrl: 'https://app.supabase.com/projects',
+        externalUrlLabel: 'Get from Supabase Dashboard → Settings → API',
+        testValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        helpText: 'Safe for frontend. Security controlled by RLS policies.',
+        isSecret: false
+      },
+      {
+        id: 'supabase_service_role',
+        name: 'SUPABASE_SERVICE_ROLE_KEY',
+        label: 'Service Role Secret Key',
+        type: 'external',
+        environment: 'production',
+        description: 'Private service role key for server operations',
+        isExternal: true,
+        externalUrl: 'https://app.supabase.com/projects',
+        externalUrlLabel: 'Get from Supabase Dashboard → Settings → API',
+        helpText: 'HIGHLY CONFIDENTIAL - Bypasses RLS. Server-side only.',
+        isSecret: true
       }
     ]
   },
   {
     id: 'aws-s3',
     name: 'AWS S3',
-    description: 'Amazon S3 bucket configuration',
+    description: 'Amazon S3 bucket configuration with IAM best practices',
     category: 'Cloud Storage',
+    documentationUrl: 'https://docs.aws.amazon.com/s3/',
+    supportsTesting: true,
     fields: [
       {
         id: 'aws_access_key_id',
         name: 'AWS_ACCESS_KEY_ID',
         label: 'Access Key ID',
         type: 'external',
+        environment: 'both',
         description: 'IAM user access key for AWS services',
         isExternal: true,
         externalUrl: 'https://console.aws.amazon.com/iam/home#/security_credentials',
-        externalUrlLabel: 'Get from AWS Console'
+        externalUrlLabel: 'Create in AWS IAM Console',
+        helpText: 'Use separate IAM users for dev/prod with minimal permissions.',
+        isSecret: false
       },
       {
         id: 'aws_secret_access_key',
         name: 'AWS_SECRET_ACCESS_KEY',
         label: 'Secret Access Key',
         type: 'external',
+        environment: 'both',
         description: 'Secret key paired with access key ID',
         isExternal: true,
         externalUrl: 'https://console.aws.amazon.com/iam/home#/security_credentials',
-        externalUrlLabel: 'Get from AWS Console'
+        externalUrlLabel: 'Get from AWS IAM Console',
+        helpText: 'CONFIDENTIAL - Rotate regularly. Use IAM roles when possible.',
+        isSecret: true
       },
       {
         id: 'aws_region',
         name: 'AWS_REGION',
         label: 'AWS Region',
         type: 'text',
-        description: 'AWS region for your S3 bucket (e.g., us-east-1)'
+        environment: 'both',
+        description: 'AWS region for your S3 bucket (e.g., us-east-1)',
+        testValue: 'us-east-1',
+        helpText: 'Choose region closest to your users for better performance.',
+        isSecret: false
       },
       {
         id: 's3_bucket_name',
         name: 'S3_BUCKET_NAME',
         label: 'S3 Bucket Name',
         type: 'text',
-        description: 'Name of your S3 bucket'
+        environment: 'both',
+        description: 'Name of your S3 bucket',
+        testValue: 'my-app-dev-bucket',
+        helpText: 'Use different buckets for dev/staging/prod environments.',
+        isSecret: false
       }
     ]
   },
@@ -410,28 +602,36 @@ export const predefinedTemplates: Template[] = [
   {
     id: 'openai',
     name: 'OpenAI',
-    description: 'OpenAI API configuration',
+    description: 'OpenAI API configuration with usage monitoring',
     category: 'AI Services',
+    documentationUrl: 'https://platform.openai.com/docs/api-reference',
+    supportsTesting: true,
     fields: [
       {
         id: 'openai_api_key',
         name: 'OPENAI_API_KEY',
         label: 'API Key',
         type: 'external',
+        environment: 'both',
         description: 'OpenAI API key for accessing AI services',
         isExternal: true,
         externalUrl: 'https://platform.openai.com/api-keys',
-        externalUrlLabel: 'Get from OpenAI Platform'
+        externalUrlLabel: 'Create in OpenAI Platform',
+        helpText: 'CONFIDENTIAL - Monitor usage and set billing limits. Server-side only.',
+        isSecret: true
       },
       {
         id: 'organization_id',
         name: 'ORGANIZATION_ID',
         label: 'Organization ID',
         type: 'external',
+        environment: 'both',
         description: 'OpenAI organization identifier (optional)',
         isExternal: true,
         externalUrl: 'https://platform.openai.com/settings/organization',
-        externalUrlLabel: 'Get from OpenAI Platform'
+        externalUrlLabel: 'Get from OpenAI Organization Settings',
+        helpText: 'Optional. Required only for organization-owned API keys.',
+        isSecret: false
       }
     ]
   },
@@ -574,6 +774,43 @@ export const predefinedTemplates: Template[] = [
         isExternal: true,
         externalUrl: 'https://app.sendgrid.com/settings/api_keys',
         externalUrlLabel: 'Get from SendGrid Dashboard'
+      }
+    ]
+  },
+  {
+    id: 'google-cloud',
+    name: 'Google Cloud Platform',
+    description: 'Google Cloud Platform services configuration',
+    category: 'Cloud Services',
+    documentationUrl: 'https://cloud.google.com/docs',
+    supportsTesting: true,
+    fields: [
+      {
+        id: 'google_project_id',
+        name: 'GOOGLE_PROJECT_ID',
+        label: 'Project ID',
+        type: 'external',
+        environment: 'both',
+        description: 'Google Cloud project identifier',
+        isExternal: true,
+        externalUrl: 'https://console.cloud.google.com/',
+        externalUrlLabel: 'Get from Google Cloud Console',
+        testValue: 'my-project-dev-123456',
+        helpText: 'Public identifier. Use separate projects for dev/staging/prod.',
+        isSecret: false
+      },
+      {
+        id: 'google_service_account',
+        name: 'GOOGLE_SERVICE_ACCOUNT',
+        label: 'Service Account Key',
+        type: 'external',
+        environment: 'production',
+        description: 'Service account JSON key for server operations',
+        isExternal: true,
+        externalUrl: 'https://console.cloud.google.com/iam-admin/serviceaccounts',
+        externalUrlLabel: 'Create in Google Cloud IAM',
+        helpText: 'HIGHLY CONFIDENTIAL - Use principle of least privilege.',
+        isSecret: true
       }
     ]
   }

@@ -10,6 +10,11 @@ export interface KeyField {
   isExternal?: boolean;
   externalUrl?: string;
   externalUrlLabel?: string;
+  environment?: 'development' | 'production' | 'both';
+  isSecret?: boolean;
+  testValue?: string;
+  validationPattern?: string;
+  helpText?: string;
 }
 
 export interface Template {
@@ -21,6 +26,8 @@ export interface Template {
   isCustom?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  documentationUrl?: string;
+  supportsTesting?: boolean;
 }
 
 export interface Project {
@@ -30,6 +37,7 @@ export interface Project {
   templateId: string;
   templateName: string;
   encryptedData: string;
+  environment: 'development' | 'production';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,6 +46,7 @@ export interface GeneratedKeySet {
   projectName: string;
   templateName: string;
   keys: Record<string, string>;
+  environment: 'development' | 'production';
   generatedAt: Date;
 }
 
@@ -45,4 +54,5 @@ export interface TemplateFilters {
   searchTerm: string;
   category: string;
   type: 'all' | 'predefined' | 'custom';
+  environment: 'all' | 'development' | 'production';
 }

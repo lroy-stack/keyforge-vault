@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Copy, Edit, ExternalLink, MoreVertical, Trash2, Key, Globe } from 'lucide-react';
+import { Copy, Edit, ExternalLink, MoreVertical, Trash2, Key, Globe, TestTube, Building, Shield, Info } from 'lucide-react';
 import { Template } from '@/types';
 
 interface TemplateCardProps {
@@ -38,13 +38,17 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
     return colors[category as keyof typeof colors] || colors['Custom'];
   };
 
-  const getFieldCounts = () => {
-    const localFields = template.fields.filter(f => !f.isExternal).length;
+  const getFieldStats = () => {
+    const devFields = template.fields.filter(f => f.environment === 'development').length;
+    const prodFields = template.fields.filter(f => f.environment === 'production').length;
+    const bothFields = template.fields.filter(f => f.environment === 'both').length;
     const externalFields = template.fields.filter(f => f.isExternal).length;
-    return { localFields, externalFields };
+    const secretFields = template.fields.filter(f => f.isSecret).length;
+    
+    return { devFields, prodFields, bothFields, externalFields, secretFields };
   };
 
-  const { localFields, externalFields } = getFieldCounts();
+  const { devFields, prodFields, bothFields, externalFields, secretFields } = getFieldStats();
 
   return (
     <Card className="hover:shadow-lg transition-all duration-200 hover:scale-105 border-2 hover:border-primary/20">
@@ -56,6 +60,12 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
               {template.isCustom && (
                 <Badge variant="outline" className="text-xs">
                   Custom
+                </Badge>
+              )}
+              {template.supportsTesting && (
+                <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                  <TestTube className="w-3 h-3 mr-1" />
+                  Test Support
                 </Badge>
               )}
             </div>
@@ -104,20 +114,35 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-4">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="space-y-2">
               <div className="flex items-center gap-1">
-                <Key className="w-4 h-4 text-blue-500" />
-                <span className="text-muted-foreground">{localFields} local</span>
+                <TestTube className="w-4 h-4 text-blue-500" />
+                <span className="text-muted-foreground">{devFields} dev only</span>
               </div>
               <div className="flex items-center gap-1">
-                <Globe className="w-4 h-4 text-orange-500" />
-                <span className="text-muted-foreground">{externalFields} external</span>
+                <Building className="w-4 h-4 text-red-500" />
+                <span className="text-muted-foreground">{prodFields} prod only</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Globe className="w-4 h-4 text-gray-500" />
+                <span className="text-muted-foreground">{bothFields} both</span>
               </div>
             </div>
-            <span className="text-xs text-muted-foreground">
-              {template.fields.length} field{template.fields.length !== 1 ? 's' : ''}
-            </span>
+            <div className="space-y-2">
+              <div className="flex items-center gap-1">
+                <ExternalLink className="w-4 h-4 text-orange-500" />
+                <span className="text-muted-foreground">{externalFields} external</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Shield className="w-4 h-4 text-red-500" />
+                <span className="text-muted-foreground">{secretFields} secret</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Key className="w-4 h-4 text-blue-500" />
+                <span className="text-muted-foreground">{template.fields.length} total</span>
+              </div>
+            </div>
           </div>
           
           <div className="flex gap-2">
@@ -136,6 +161,16 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
                 className="px-3"
               >
                 <Copy className="w-4 h-4" />
+              </Button>
+            )}
+            {template.documentationUrl && (
+              <Button 
+                onClick={() => window.open(template.documentationUrl, '_blank')}
+                variant="outline"
+                size="sm"
+                className="px-3"
+              >
+                <Info className="w-4 h-4" />
               </Button>
             )}
           </div>
